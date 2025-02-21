@@ -2,8 +2,8 @@ from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException
 
+from trading_strategies.api_utility import get_auth_config, query_api
 from trading_strategies.custom_models import AuthConfig
-from trading_strategies.utility import get_auth_config, query_api
 
 app = FastAPI()
 
