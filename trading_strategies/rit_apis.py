@@ -44,8 +44,9 @@ async def get_recent_news(
         if limit or after
         else {}
     )
+    print("params are:", params)
     endpoint = "/v1/news"
-    return await query_api("get", endpoint, auth)
+    return await query_api("get", endpoint, auth, params=params)
 
 
 @app.get("/assets")
@@ -53,9 +54,9 @@ async def get_assets(
     ticker: Optional[str] = None, auth: AuthConfig = Depends(get_auth_config)
 ):
     """Fetches the trading limits by querying the assets API."""
-    params = {"ticker": ticker} if ticker else {}
+    params = {"ticker": ticker}
     endpoint = "/v1/assets"
-    return await query_api("get", endpoint, auth)
+    return await query_api("get", endpoint, auth, params=params)
 
 
 @app.get("/assets/history")
@@ -66,8 +67,9 @@ async def get_assets_history(
     auth: AuthConfig = Depends(get_auth_config),
 ):
     """Fetches the trading limits by querying the assets/history API."""
+    params = {"ticker": ticker, "limit": limit, "period": period}
     endpoint = "/v1/assets/history"
-    return await query_api("get", endpoint, auth)
+    return await query_api("get", endpoint, auth, params=params)
 
 
 @app.get("/securities")
@@ -77,7 +79,7 @@ async def get_securities(
     """Fetches the securities by querying the securities API."""
     params = {"ticker": ticker} if ticker else {}
     endpoint = "/v1/securities"
-    return await query_api(endpoint, auth, params=params)
+    return await query_api("get", endpoint, auth, params=params)
 
 
 @app.get("/securities/book")
@@ -154,7 +156,7 @@ async def get_orders(
 @app.post("/orders")
 async def create_order(
     ticker: str,
-    type: str,
+    ticker_type: str,
     quantity: int,
     action: str,
     price: Optional[float] = None,  # Optional, required if type is LIMIT
@@ -165,13 +167,13 @@ async def create_order(
     endpoint = "/v1/orders"
     params = {
         "ticker": ticker,
-        "type": type,
+        "type": ticker_type,
         "quantity": quantity,
         "action": action,
     }
-    if type == "LIMIT" and price is not None:
+    if ticker_type == "LIMIT" and price is not None:
         params["price"] = price
-    if type == "MARKET" and dry_run is not None:
+    if ticker_type == "MARKET" and dry_run is not None:
         params["dry_run"] = dry_run
     return await query_api("post", endpoint, auth, params=params)
 

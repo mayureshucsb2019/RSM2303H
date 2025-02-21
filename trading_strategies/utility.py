@@ -42,7 +42,6 @@ async def query_api(
     endpoint: str,
     auth: AuthConfig,
     params: Optional[Dict[str, Any]] = None,
-    json: Optional[Dict[str, Any]] = None,
 ) -> Any:
     """Generic function to query the trading API with different HTTP methods."""
 
@@ -56,11 +55,11 @@ async def query_api(
             if method.lower() == "get":
                 response = await client.get(url, headers=headers, params=params)
             elif method.lower() == "post":
-                response = await client.post(url, headers=headers, json=json)
+                response = await client.post(url, headers=headers, params=params)
             elif method.lower() == "delete":
-                response = await client.delete(url, headers=headers, json=json)
+                response = await client.delete(url, headers=headers, params=params)
             elif method.lower() == "put":
-                response = await client.put(url, headers=headers, json=json)
+                response = await client.put(url, headers=headers, params=params)
             else:
                 raise ValueError("Unsupported HTTP method.")
 
