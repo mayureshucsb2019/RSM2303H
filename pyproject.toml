@@ -1,0 +1,29 @@
+[project]
+name = "rsm2303h"
+version = "0.1.0"
+description = "Risk Modelling and Financial Trading Strategy"
+authors = [
+    {name = "Mayuresh Anand",email = "mayuresh.anand.canada@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi (>=0.115.8,<0.116.0)",
+    "uvicorn (>=0.34.0,<0.35.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "pydantic (>=2.10.6,<3.0.0)",
+    "python-dotenv (>=1.0.1,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+autoflake = "^2.3.1"
+isort = "^6.0.0"
+black = "^25.1.0"
+pre-commit = "^4.1.0"
+
