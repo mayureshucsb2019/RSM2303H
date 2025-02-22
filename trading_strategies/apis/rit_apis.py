@@ -12,6 +12,10 @@ from trading_strategies.apis.api_utility import (
     query_api,
 )
 from trading_strategies.models.custom_models import AuthConfig
+from trading_strategies.logger_config import setup_logger
+
+# Configure logging
+logger = setup_logger(__name__)
 
 app = FastAPI()
 
@@ -52,7 +56,7 @@ async def get_recent_news(
         if limit or after
         else {}
     )
-    print("params are:", params)
+    logger.info(f"params are: {params}")
     endpoint = "/v1/news"
     return await query_api("get", endpoint, auth, params=params)
 

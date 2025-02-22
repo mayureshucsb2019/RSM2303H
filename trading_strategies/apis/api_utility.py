@@ -7,7 +7,11 @@ import httpx
 from dotenv import load_dotenv
 from fastapi import HTTPException
 
+from trading_strategies.logger_config import setup_logger
 from trading_strategies.models.custom_models import AuthConfig
+
+# Configure logging
+logger = setup_logger(__name__)
 
 
 def get_auth_config() -> AuthConfig:
@@ -63,12 +67,12 @@ async def query_api(
             response.raise_for_status()  # Raises an HTTPError for bad responses (4xx or 5xx)
             return response.json()
         except httpx.RequestError as e:
-            print(f"Request error: {str(e)}")  # Log the request error
+            logger.error(f"Request error: {str(e)}")  # Log the request error
             raise HTTPException(
                 status_code=500, detail=f"Error querying {endpoint}: {str(e)}"
             )
         except httpx.HTTPStatusError as e:
-            print(f"HTTP error: {str(e)}")  # Log the HTTP error
+            logger.error(f"HTTP error: {str(e)}")  # Log the HTTP error
             raise HTTPException(
                 status_code=e.response.status_code,
                 detail=f"Error querying {endpoint}: {str(e)}",
@@ -97,8 +101,8 @@ async def market_square_off_ticker(
             position -= quantity
             await asyncio.sleep(0.1)
         except Exception as e:
-            print(
-                f"Error occured when market_square_off {action} {ticker} {quantity}, current:{position} {e}"
+            logger.error(
+                f"Error occurred when market_square_off {action} {ticker} {quantity}, current:{position} {e}"
             )
             await asyncio.sleep(0.1)
     return
@@ -113,9 +117,11 @@ async def cancel_open_orders(open_orders: list, auth: AuthConfig):
                 endpoint = f"/v1/orders/{order['order_id']}"
                 await query_api("delete", endpoint, auth)
                 await asyncio.sleep(0.1)
-                print(f"Cancelled {i} {order['order_id']} of {len(open_orders)} orders")
+                logger.info(
+                    f"Cancelled {i} {order['order_id']} of {len(open_orders)} orders"
+                )
             except Exception as e:
-                print(
+                logger.error(
                     f"An error occurred while cancelling the order {i} {order['order_id']} of {len(open_orders)} orders: {e}"
                 )
         while True:
@@ -124,10 +130,9 @@ async def cancel_open_orders(open_orders: list, auth: AuthConfig):
                 params = {"status": "OPEN"}
                 endpoint = "/v1/orders"
                 open_orders = await query_api("get", endpoint, auth, params=params)
-                # print("New open orders", open_orders)
                 break
             except Exception as e:
-                print(f"An error occurred while fetching OPEN orders: {e}")
+                logger.error(f"An error occurred while fetching OPEN orders: {e}")
     return
 
 
@@ -156,21 +161,18 @@ async def cancel_all_open_order(auth: AuthConfig):
     """
     # TODO @Mayuresh If error happens do to rate limiting then try again
     open_orders = await query_api("get", "/v1/orders", auth, params={"status": "OPEN"})
-    # print(f"Open orders are {[order["order_id"] for order in open_orders]}")
     return await cancel_open_orders(open_orders, auth)
-    # print("Cancelled all open orders")
 
 
 async def market_square_off_all_tickers(auth: AuthConfig, batch_size: int = 10000):
     """Fetches the list of securities and then squares them off at the MARKET."""
     endpoint = "/v1/securities"
-    # TODO @Mayuresh If error happens do to rate limiting then try again
     securities_data = await query_api("get", endpoint, auth)
     for security in securities_data:
         await market_square_off_ticker(
             security["position"], security["ticker"], auth=auth, batch_size=batch_size
         )
-    print(f"Trade for all tickers squared off")
+    logger.info(f"Trade for all tickers squared off")
     return
 
 
@@ -193,7 +195,6 @@ async def accept_tender(id: int, price: float, auth: AuthConfig):
 
 async def fetch_order_book(ticker: str, auth: AuthConfig, limit: Optional[int] = 20):
     """Fetches the order book of a security by querying the securities/book API."""
-    # Construct the query parameters
     params = {"ticker": ticker}
     if limit is not None:
         params["limit"] = limit
@@ -209,19 +210,19 @@ async def is_tender_processed(
     while processing_count < 10:
         try:
             securities_data = await fetch_securities(auth, ticker)
-            print(
+            logger.info(
                 f"Checking if tender processed, quantity:{quantity} difference:{abs(initial_position - securities_data[0]['position'])} initial_position:{initial_position} current_position:{securities_data[0]['position']} "
             )
         except Exception as e:
-            print(f"An error occurred while querying security {ticker}: {e}")
+            logger.error(f"An error occurred while querying security {ticker}: {e}")
         if abs(initial_position - securities_data[0]["position"]) >= int(
             0.5 * abs(quantity)
         ):
-            print(f"Tender has been processed")
+            logger.info(f"Tender has been processed")
             return True
         await asyncio.sleep(0.1)
         processing_count += 1
-    print(f"Tender wasn't processed")
+    logger.info(f"Tender wasn't processed")
     return False
 
 

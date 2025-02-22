@@ -3,11 +3,11 @@ import asyncio
 import trading_strategies.apis.rit_apis as rit
 from trading_strategies.apis.api_utility import get_auth_config
 
-# from trading_strategies.strategy.LT3_strategy import (
-#     limit_square_off_ticker_randomized_price,
-#     run_l3_strategy,
-# )
-# from trading_strategies.strategy.LT3_strategy_utility import parse_lt3_env_variables
+from trading_strategies.strategy.LT3_strategy import (
+    limit_square_off_ticker_randomized_price,
+    run_l3_strategy,
+)
+from trading_strategies.strategy.LT3_strategy_utility import parse_lt3_env_variables
 from trading_strategies.strategy.strategy_utility import (
     display_market_depth_table,
     generate_single_market_depth_for_ticker,
@@ -69,9 +69,9 @@ async def main():
     # print(await custom_api.market_square_off_ticker("CRZY", auth=get_auth_config()))
     # print(await custom_api.market_square_off_all_tickers(auth=get_auth_config()))
 
-    # await run_l3_strategy(
-    #     limit_square_off_ticker_randomized_price, parse_lt3_env_variables()
-    # )
+    await run_l3_strategy(
+        limit_square_off_ticker_randomized_price, parse_lt3_env_variables()
+    )
 
     # ticker = "CRZY"
     # bid, ask = await generate_single_market_depth_for_ticker(auth=get_auth_config(), ticker=ticker)
@@ -82,12 +82,12 @@ async def main():
     # while True:
     #     await generate_aggregate_orderbook(auth=get_auth_config(), tickers=["CRZY_A", "CRZY_M"])
     #     await asyncio.sleep(1)
-    while True:
-        bid, ask = await generate_single_market_depth_for_ticker(
-            auth=get_auth_config(), ticker="CRZY"
-        )
-        display_market_depth_table("CRZY", bid, ask)
-        await asyncio.sleep(0.05)
+    # while True:
+    #     bid, ask = await generate_single_market_depth_for_ticker(
+    #         auth=get_auth_config(), ticker="CRZY"
+    #     )
+    #     display_market_depth_table("CRZY", bid, ask)
+    #     await asyncio.sleep(0.05)
 
 
 if __name__ == "__main__":

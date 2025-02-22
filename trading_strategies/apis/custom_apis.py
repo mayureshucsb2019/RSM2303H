@@ -11,7 +11,11 @@ from trading_strategies.apis.api_utility import (
 from trading_strategies.apis.api_utility import market_square_off_all_tickers as msoat
 from trading_strategies.apis.api_utility import market_square_off_ticker as msot
 from trading_strategies.apis.api_utility import query_api
+from trading_strategies.logger_config import setup_logger
 from trading_strategies.models.custom_models import AuthConfig
+
+# Configure logging
+logger = setup_logger(__name__)
 
 router = APIRouter()
 
@@ -60,9 +64,8 @@ async def cancel_all_open_order_for_ticker(
     # TODO @Mayuresh If error happens do to rate limiting then try again
     open_orders = await query_api("get", "/v1/orders", auth, params={"status": "OPEN"})
     filtered_orders = [order for order in open_orders if order["ticker"] == ticker]
-    # print(f"Open orders for ticker {ticker} are {filtered_orders}")
     await cancel_open_orders(filtered_orders, auth)
-    print(f"Cancelled all open orders for ticker {ticker}")
+    logger.info(f"Cancelled all open orders for ticker {ticker}")
     return True
 
 
@@ -89,6 +92,5 @@ async def market_square_off_ticker(
     # TODO @Mayuresh If error happens do to rate limiting then try again
     securities_data = await query_api("get", endpoint, auth, params=securities_params)
     await msot(int(securities_data[0]["position"]), ticker, auth=auth)
-    print(
-        f"Trade for {ticker} squared off with for initial position: {securities_data[0]['position']}"
-    )
+    logger.info(f"Trade for {ticker} squared off with for initial position: {securities_data[0]['position']}")
+    return True
