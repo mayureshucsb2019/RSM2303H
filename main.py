@@ -1,16 +1,16 @@
 import asyncio
 
 import trading_strategies.rit_apis as rit
+from trading_strategies.api_utility import get_auth_config
 from trading_strategies.LT3_strategy import (
     limit_square_off_ticker_randomized_price,
     run_l3_strategy,
 )
 from trading_strategies.LT3_strategy_utility import parse_lt3_env_variables
-from trading_strategies.api_utility import get_auth_config
 
 
 async def main():
-    # print(await rit.get_case_status(auth=get_auth_config()))
+    print(await rit.get_case_status(auth=get_auth_config()))
     # print(await rit.get_trader_info(auth=get_auth_config()))
     # print(await rit.get_recent_news(after=0, auth=get_auth_config()))
     # print(await rit.get_assets(auth=get_auth_config()))

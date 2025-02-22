@@ -31,14 +31,26 @@ async def limit_square_off_ticker_randomized_price(
         if quantity >= batch_size:
             ticker = ticker
             ticker_type = "MARKET" if random_choice == 0 else "LIMIT"
-            temp_price = None if random_choice == 0 else price - random_choice if action == "BUY" else price + random_choice
+            temp_price = (
+                None
+                if random_choice == 0
+                else price - random_choice
+                if action == "BUY"
+                else price + random_choice
+            )
             action = action
             temp_quantity = batch_size
             quantity -= batch_size
         elif quantity > 0 and quantity < batch_size:
             ticker = ticker
             ticker_type = "MARKET" if random_choice == 0 else "LIMIT"
-            temp_price = None if random_choice == 0 else price - random_choice if action == "BUY" else price + random_choice
+            temp_price = (
+                None
+                if random_choice == 0
+                else price - random_choice
+                if action == "BUY"
+                else price + random_choice
+            )
             action = action
             temp_quantity = quantity
             quantity = 0
@@ -52,13 +64,15 @@ async def limit_square_off_ticker_randomized_price(
                 quantity=temp_quantity,
                 action=action,
                 price=temp_price,
-                dry_run=0
+                dry_run=0,
             )
             print(
                 f"Trade for {action} {temp_quantity} {ticker} placed at  {temp_price}"
             )
         except Exception as e:
-            print(f"An error occurred while posting the order {(ticker, ticker_type, quantity, action, price,)}: {e}")
+            print(
+                f"An error occurred while posting the order {(ticker, ticker_type, quantity, action, price,)}: {e}"
+            )
         await asyncio.sleep(0.1)
 
 
@@ -142,7 +156,9 @@ async def run_l3_strategy(
                         print(f"Cannot accept this tender at this time")
                         break
                     securities_data = await fetch_securities(auth, tender["ticker"])
-                    print(f"Queried intial position for {ticker} is {securities_data[0]['position']}")
+                    print(
+                        f"Queried intial position for {ticker} is {securities_data[0]['position']}"
+                    )
                     tender_response = await accept_tender(
                         auth=auth, id=tender["tender_id"], price=tender["price"]
                     )
@@ -179,5 +195,5 @@ async def run_l3_strategy(
 
                 else:
                     print(f"Waiting for favorable condition to accept tender")
-        
+
         await asyncio.sleep(1)
