@@ -2,16 +2,16 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends
 
-from trading_strategies.api_utility import cancel_all_open_order as caoo
-from trading_strategies.api_utility import (
+from trading_strategies.apis.api_utility import cancel_all_open_order as caoo
+from trading_strategies.apis.api_utility import (
     cancel_open_orders,
     fetch_current_tick,
     get_auth_config,
 )
-from trading_strategies.api_utility import market_square_off_all_tickers as msoat
-from trading_strategies.api_utility import market_square_off_ticker as msot
-from trading_strategies.api_utility import query_api
-from trading_strategies.custom_models import AuthConfig
+from trading_strategies.apis.api_utility import market_square_off_all_tickers as msoat
+from trading_strategies.apis.api_utility import market_square_off_ticker as msot
+from trading_strategies.apis.api_utility import query_api
+from trading_strategies.models.custom_models import AuthConfig
 
 router = APIRouter()
 

@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException
 
-from trading_strategies.api_utility import (
+from trading_strategies.apis.api_utility import (
     accept_tender,
     fetch_active_tenders,
     fetch_order_book,
@@ -11,7 +11,7 @@ from trading_strategies.api_utility import (
     post_order,
     query_api,
 )
-from trading_strategies.custom_models import AuthConfig
+from trading_strategies.models.custom_models import AuthConfig
 
 app = FastAPI()
 

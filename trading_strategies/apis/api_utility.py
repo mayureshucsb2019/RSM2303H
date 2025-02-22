@@ -7,7 +7,7 @@ import httpx
 from dotenv import load_dotenv
 from fastapi import HTTPException
 
-from trading_strategies.custom_models import AuthConfig
+from trading_strategies.models.custom_models import AuthConfig
 
 
 def get_auth_config() -> AuthConfig:

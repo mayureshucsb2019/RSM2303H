@@ -2,7 +2,7 @@ import asyncio
 import random
 from typing import Awaitable, Callable
 
-from trading_strategies.api_utility import (
+from trading_strategies.apis.api_utility import (
     accept_tender,
     cancel_all_open_order,
     fetch_active_tenders,
@@ -12,8 +12,8 @@ from trading_strategies.api_utility import (
     market_square_off_all_tickers,
     post_order,
 )
-from trading_strategies.custom_models import AuthConfig
-from trading_strategies.LT3_strategy_utility import generate_lt3_signal
+from trading_strategies.models.custom_models import AuthConfig
+from trading_strategies.strategy.LT3_strategy_utility import generate_lt3_signal
 
 
 async def limit_square_off_ticker_randomized_price(

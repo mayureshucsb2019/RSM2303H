@@ -1,5 +1,5 @@
-from trading_strategies.custom_models import AuthConfig
-from trading_strategies.strategy_utility import (
+from trading_strategies.models.custom_models import AuthConfig
+from trading_strategies.strategy.strategy_utility import (
     generate_single_market_depth_for_ticker,
     get_env_variable,
 )

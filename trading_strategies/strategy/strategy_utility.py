@@ -2,8 +2,8 @@ import os
 
 from dotenv import load_dotenv  # type: ignore
 
-from trading_strategies.api_utility import fetch_order_book
-from trading_strategies.custom_models import AuthConfig
+from trading_strategies.apis.api_utility import fetch_order_book
+from trading_strategies.models.custom_models import AuthConfig
 
 
 def get_env_variable(name: str, type_func, required: bool = True):

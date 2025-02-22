@@ -1,12 +1,12 @@
 import asyncio
 
-import trading_strategies.rit_apis as rit
-from trading_strategies.api_utility import get_auth_config
-from trading_strategies.LT3_strategy import (
+import trading_strategies.apis.rit_apis as rit
+from trading_strategies.apis.api_utility import get_auth_config
+from trading_strategies.strategy.LT3_strategy import (
     limit_square_off_ticker_randomized_price,
     run_l3_strategy,
 )
-from trading_strategies.LT3_strategy_utility import parse_lt3_env_variables
+from trading_strategies.strategy.LT3_strategy_utility import parse_lt3_env_variables
 
 
 async def main():
