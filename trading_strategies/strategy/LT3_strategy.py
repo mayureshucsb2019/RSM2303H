@@ -170,17 +170,6 @@ async def run_l3_strategy(
                             tender["quantity"],
                             securities_data[0]["position"],
                         )
-                        profit_price = (
-                            tender["price"] - lt3_config["T3_MIN_PROFIT_MARGIN"]
-                            if squareoff_action == "BUY"
-                            else tender["price"] + lt3_config["T3_MIN_PROFIT_MARGIN"]
-                        )
-                        stoploss_price = (
-                            tender["price"] * (1 + lt3_config["T3_STOP_LOSS_PERCENT"])
-                            if squareoff_action == "BUY"
-                            else tender["price"]
-                            * (1 - lt3_config["T3_STOP_LOSS_PERCENT"])
-                        )
                         if is_tender_processed_flag:
                             asyncio.create_task(
                                 strategy_func(

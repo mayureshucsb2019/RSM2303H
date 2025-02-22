@@ -1,6 +1,8 @@
 import os
 
 from dotenv import load_dotenv  # type: ignore
+from rich.console import Console
+from rich.table import Table
 
 from trading_strategies.apis.api_utility import fetch_order_book
 from trading_strategies.models.custom_models import AuthConfig
@@ -23,7 +25,6 @@ def calculate_vwap(price_volume_list: list):
     return round(sum(p * v for p, v in price_volume_list) / total_volume, 2)
 
 
-# T3_MARKET_DEPTH_POINTS
 async def generate_single_market_depth_for_ticker(
     auth: AuthConfig, ticker: str, market_depth: int = 20
 ):
@@ -58,3 +59,186 @@ async def generate_single_market_depth_for_ticker(
         ask_data.append((ask_price, ask_volume, cumulative_ask_vol, ask_vwap))
 
     return bid_data, ask_data
+
+
+def display_market_depth_table(ticker: str, bid_data, ask_data):
+    console = Console()
+    table = Table(
+        title=f"Market Depth View - {ticker}",
+        show_header=True,
+        header_style="bold cyan",
+    )
+
+    table.add_column("BidVWAP", justify="right")
+    table.add_column("Cum Bid Vol", justify="right")
+    table.add_column("Bid Volume", justify="right")
+    table.add_column("Bid Price", justify="right")
+    table.add_column("Ask Price", justify="right")
+    table.add_column("Ask Volume", justify="right")
+    table.add_column("Cum Ask Vol", justify="right")
+    table.add_column("AskVWAP", justify="right")
+
+    for bid, ask in zip(bid_data, ask_data):
+        table.add_row(
+            f"{bid[3]:,.2f}",
+            f"{bid[2]:,.2f}",
+            f"{bid[1]:,.2f}",
+            f"{bid[0]:,.2f}",
+            f"{ask[0]:,.2f}",
+            f"{ask[1]:,.2f}",
+            f"{ask[2]:,.2f}",
+            f"{ask[3]:,.2f}",
+        )
+
+    console.print(table)
+
+
+async def generate_integrated_global_orderbook(
+    auth: AuthConfig, tickers: list, market_depth: int = 20
+):
+    global_bid_data = []  # List to hold all bid data across tickers
+    global_ask_data = []  # List to hold all ask data across tickers
+
+    # Loop through each ticker and fetch its order book
+    for ticker in tickers:
+        bid_data, ask_data = await generate_single_market_depth_for_ticker(
+            auth=auth, ticker=ticker, market_depth=market_depth
+        )
+
+        # Combine bid data
+        for price, volume, cum_volume, vwap in bid_data:
+            global_bid_data.append((price, volume, cum_volume, vwap, ticker))
+
+        # Combine ask data
+        for price, volume, cum_volume, vwap in ask_data:
+            global_ask_data.append((price, volume, cum_volume, vwap, ticker))
+
+    # Now we need to sort the global bid and ask data
+    global_bid_data = sorted(global_bid_data, key=lambda x: x[0], reverse=True)
+    global_ask_data = sorted(global_ask_data, key=lambda x: x[0])
+
+    # Calculate cumulative volumes and VWAP for the global order book
+    integrated_bid_data = []
+    integrated_ask_data = []
+    cumulative_bid_vol = 0
+    cumulative_ask_vol = 0
+    bid_vwap_list = []
+    ask_vwap_list = []
+
+    for price, volume, _, _, ticker in global_bid_data:
+        cumulative_bid_vol += volume
+        bid_vwap_list.append((price, volume))
+        bid_vwap = calculate_vwap(bid_vwap_list)
+        integrated_bid_data.append(
+            (price, volume, cumulative_bid_vol, bid_vwap, ticker)
+        )
+
+    for price, volume, _, _, ticker in global_ask_data:
+        cumulative_ask_vol += volume
+        ask_vwap_list.append((price, volume))
+        ask_vwap = calculate_vwap(ask_vwap_list)
+        integrated_ask_data.append(
+            (price, volume, cumulative_ask_vol, ask_vwap, ticker)
+        )
+
+    # Display the final integrated global order book
+    display_global_orderbook(integrated_bid_data, integrated_ask_data)
+
+    return integrated_bid_data, integrated_ask_data
+
+
+def display_global_orderbook(bid_data, ask_data):
+    console = Console()
+    table = Table(
+        title="Integrated Global Order Book",
+        show_header=True,
+        header_style="bold cyan",
+    )
+
+    table.add_column("Ticker", justify="left")
+    table.add_column("BidVWAP", justify="right")
+    table.add_column("Cum Bid Vol", justify="right")
+    table.add_column("Bid Volume", justify="right")
+    table.add_column("Bid Price", justify="right")
+    table.add_column("Ask Price", justify="right")
+    table.add_column("Ask Volume", justify="right")
+    table.add_column("Cum Ask Vol", justify="right")
+    table.add_column("AskVWAP", justify="right")
+    table.add_column("Ticker", justify="right")
+
+    # Assuming bid_data and ask_data have the ticker as the last element
+    for (bid_price, bid_volume, cum_bid_vol, bid_vwap, ticker_bid), (
+        ask_price,
+        ask_volume,
+        cum_ask_vol,
+        ask_vwap,
+        ticker_ask,
+    ) in zip(bid_data, ask_data):
+        table.add_row(
+            ticker_bid,
+            f"{bid_vwap:,.2f}",
+            f"{cum_bid_vol:,.2f}",
+            f"{bid_volume:,.2f}",
+            f"{bid_price:,.2f}",
+            f"{ask_price:,.2f}",
+            f"{ask_volume:,.2f}",
+            f"{cum_ask_vol:,.2f}",
+            f"{ask_vwap:,.2f}",
+            ticker_ask,
+        )
+
+    console.print(table)
+
+
+async def generate_aggregate_orderbook(
+    auth: AuthConfig, tickers: list, market_depth: int = 20
+):
+    # Initialize global aggregates
+    global_bid_data = []
+    global_ask_data = []
+    cumulative_bid_volume = 0
+    cumulative_ask_volume = 0
+    bid_vwap_list = []
+    ask_vwap_list = []
+
+    tickers_combined = ""
+
+    # Process each ticker to generate individual order books
+    for ticker in tickers:
+        tickers_combined += ticker + "-"
+        bid_data, ask_data = await generate_single_market_depth_for_ticker(
+            auth=auth, ticker=ticker, market_depth=market_depth
+        )
+
+        # Aggregate bid data
+        for bid_price, bid_volume, cum_bid_vol, bid_vwap in bid_data:
+            cumulative_bid_volume += bid_volume
+            bid_vwap_list.append((bid_price, bid_volume))
+            bid_vwap = calculate_vwap(bid_vwap_list)
+            global_bid_data.append(
+                (bid_vwap, cumulative_bid_volume, bid_volume, bid_price)
+            )
+
+        # Aggregate ask data
+        for ask_price, ask_volume, cum_ask_vol, ask_vwap in ask_data:
+            cumulative_ask_volume += ask_volume
+            ask_vwap_list.append((ask_price, ask_volume))
+            ask_vwap = calculate_vwap(ask_vwap_list)
+            global_ask_data.append(
+                (ask_price, ask_volume, cumulative_ask_volume, ask_vwap)
+            )
+
+    # Sort aggregated bid data (by bidVWAP descending)
+    global_bid_data.sort(
+        key=lambda x: x[3], reverse=True
+    )  # Sorting by bid price (4th element)
+
+    # Sort aggregated ask data (by askVWAP ascending)
+    global_ask_data.sort(key=lambda x: x[3])  # Sorting by ask price (1st element)
+
+    # Display aggregated market depth tables
+    display_market_depth_table(
+        ticker=tickers_combined, bid_data=global_bid_data, ask_data=global_ask_data
+    )
+
+    return global_bid_data, global_ask_data
