@@ -1,6 +1,12 @@
 import asyncio
 
-# import trading_strategies.rit_apis as rit
+import trading_strategies.rit_apis as rit
+from trading_strategies.LT3_strategy import (
+    limit_square_off_ticker_randomized_price,
+    run_l3_strategy,
+)
+from trading_strategies.LT3_strategy_utility import parse_lt3_env_variables
+from trading_strategies.api_utility import get_auth_config
 
 
 async def main():
@@ -54,7 +60,10 @@ async def main():
 
     # print(await custom_api.market_square_off_ticker("CRZY", auth=get_auth_config()))
     # print(await custom_api.market_square_off_all_tickers(auth=get_auth_config()))
-    pass
+
+    await run_l3_strategy(
+        limit_square_off_ticker_randomized_price, parse_lt3_env_variables()
+    )
 
 
 if __name__ == "__main__":

@@ -2,7 +2,15 @@ from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException
 
-from trading_strategies.api_utility import get_auth_config, query_api
+from trading_strategies.api_utility import (
+    accept_tender,
+    fetch_active_tenders,
+    fetch_order_book,
+    fetch_securities,
+    get_auth_config,
+    post_order,
+    query_api,
+)
 from trading_strategies.custom_models import AuthConfig
 
 app = FastAPI()
@@ -77,9 +85,7 @@ async def get_securities(
     ticker: Optional[str] = None, auth: AuthConfig = Depends(get_auth_config)
 ):
     """Fetches the securities by querying the securities API."""
-    params = {"ticker": ticker} if ticker else {}
-    endpoint = "/v1/securities"
-    return await query_api("get", endpoint, auth, params=params)
+    return await fetch_securities(auth, ticker=ticker)
 
 
 @app.get("/securities/book")
@@ -89,15 +95,7 @@ async def get_order_book(
     auth: AuthConfig = Depends(get_auth_config),
 ):
     """Fetches the order book of a security by querying the securities/book API."""
-    # Construct the query parameters
-    params = {"ticker": ticker}
-    if limit is not None:
-        params["limit"] = limit
-
-    endpoint = "/v1/securities/book"
-
-    # Call the generic query_api function
-    return await query_api("get", endpoint, auth, params=params)
+    return await fetch_order_book(ticker=ticker, auth=auth, limit=limit)
 
 
 @app.get("/securities/history")
@@ -164,18 +162,15 @@ async def create_order(
     auth: AuthConfig = Depends(get_auth_config),  # Optional parameter
 ):
     """Insert a new order."""
-    endpoint = "/v1/orders"
-    params = {
-        "ticker": ticker,
-        "type": ticker_type,
-        "quantity": quantity,
-        "action": action,
-    }
-    if ticker_type == "LIMIT" and price is not None:
-        params["price"] = price
-    if ticker_type == "MARKET" and dry_run is not None:
-        params["dry_run"] = dry_run
-    return await query_api("post", endpoint, auth, params=params)
+    return await post_order(
+        auth=auth,
+        ticker=ticker,
+        ticker_type=ticker_type,
+        quantity=quantity,
+        action=action,
+        price=price,
+        dry_run=dry_run,
+    )
 
 
 # GET /orders/{id}
@@ -202,8 +197,7 @@ async def cancel_order(
 @app.get("/tenders")
 async def get_active_tenders(auth: AuthConfig = Depends(get_auth_config)):
     """Gets a list of all active tenders."""
-    endpoint = "/v1/tenders"
-    return await query_api("get", endpoint, auth)
+    return await fetch_active_tenders(auth=auth)
 
 
 # POST /tenders/{id}
@@ -212,9 +206,7 @@ async def accept_tender(
     id: int, price: float, auth: AuthConfig = Depends(get_auth_config)
 ):
     """Accept the tender."""
-    endpoint = f"/v1/tenders/{id}"
-    params = {"price": price}
-    return await query_api("post", endpoint, auth, params=params)
+    return await accept_tender(id=id, price=price, auth=auth)
 
 
 # DELETE /tenders/{id}
