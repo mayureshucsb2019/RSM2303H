@@ -54,7 +54,7 @@ async def cancel_all_open_order(auth: AuthConfig = Depends(get_auth_config)):
 async def cancel_all_open_order_for_ticker(
     ticker: str, auth: AuthConfig = Depends(get_auth_config)
 ):
-    """Fetches the OPEN orders and cancels them till all are cancelled.
+    """Fetches the OPEN orders for a specific ticker and cancels them till all are cancelled.
     If exception happens, it logs it and keeps on trying.
     """
     # TODO @Mayuresh If error happens do to rate limiting then try again
@@ -70,6 +70,7 @@ async def cancel_all_open_order_for_ticker(
 async def market_square_off_all_tickers(
     batch_size: Optional[int] = 10000, auth: AuthConfig = Depends(get_auth_config)
 ):
+    """Fetches the list of securities and then squares them off at the MARKET."""
     return await msoat(auth, batch_size=batch_size)
 
 

@@ -9,16 +9,16 @@ from trading_strategies.models.custom_models import AuthConfig
 
 
 def get_env_variable(name: str, type_func, required: bool = True):
-    load_dotenv()
     """Fetch an environment variable and cast it to the specified type."""
+    load_dotenv()
     value = os.getenv(name)
     if required and (value is None or value.strip() == ""):
         raise ValueError(f"Missing required environment variable: {name}")
     return type_func(value)  # Convert to required type
 
 
-# Function to calculate VWAP (Volume-Weighted Average Price)
 def calculate_vwap(price_volume_list: list):
+    """Calculate VWAP (Volume-Weighted Average Price) from a list of price-volume tuples."""
     total_volume = sum(v for _, v in price_volume_list)
     if total_volume == 0:
         return "#DIV/0!"  # Avoid division by zero
@@ -28,6 +28,7 @@ def calculate_vwap(price_volume_list: list):
 async def generate_single_market_depth_for_ticker(
     auth: AuthConfig, ticker: str, market_depth: int = 20
 ):
+    """Fetch and generate market depth data for a single ticker."""
     order_book = await fetch_order_book(ticker, auth, market_depth)
     bids = sorted(order_book["bids"], key=lambda x: x["price"], reverse=True)[
         :market_depth
@@ -61,7 +62,17 @@ async def generate_single_market_depth_for_ticker(
     return bid_data, ask_data
 
 
+def format_vwap(value):
+    """Format VWAP value to two decimal places or return error string."""
+    try:
+        num = float(value)  # Attempt to convert to float
+        return f"{num:,.2f}"
+    except (ValueError, ZeroDivisionError):
+        return "#DIV/0!"
+
+
 def display_market_depth_table(ticker: str, bid_data, ask_data):
+    """Display market depth data in a table format using rich library."""
     console = Console()
     table = Table(
         title=f"Market Depth View - {ticker}",
@@ -80,14 +91,14 @@ def display_market_depth_table(ticker: str, bid_data, ask_data):
 
     for bid, ask in zip(bid_data, ask_data):
         table.add_row(
-            f"{bid[3]:,.2f}",
+            f"{format_vwap(bid[3])}",
             f"{bid[2]:,.2f}",
             f"{bid[1]:,.2f}",
             f"{bid[0]:,.2f}",
             f"{ask[0]:,.2f}",
             f"{ask[1]:,.2f}",
             f"{ask[2]:,.2f}",
-            f"{ask[3]:,.2f}",
+            f"{format_vwap(ask[3])}",
         )
 
     console.print(table)
@@ -96,6 +107,7 @@ def display_market_depth_table(ticker: str, bid_data, ask_data):
 async def generate_integrated_global_orderbook(
     auth: AuthConfig, tickers: list, market_depth: int = 20
 ):
+    """Generate an integrated global order book from multiple tickers."""
     global_bid_data = []  # List to hold all bid data across tickers
     global_ask_data = []  # List to hold all ask data across tickers
 
@@ -148,6 +160,7 @@ async def generate_integrated_global_orderbook(
 
 
 def display_global_orderbook(bid_data, ask_data):
+    """Display the integrated global order book in a table format using rich library."""
     console = Console()
     table = Table(
         title="Integrated Global Order Book",
@@ -176,14 +189,14 @@ def display_global_orderbook(bid_data, ask_data):
     ) in zip(bid_data, ask_data):
         table.add_row(
             ticker_bid,
-            f"{bid_vwap:,.2f}",
+            f"{format_vwap(bid_vwap)}",
             f"{cum_bid_vol:,.2f}",
             f"{bid_volume:,.2f}",
             f"{bid_price:,.2f}",
             f"{ask_price:,.2f}",
             f"{ask_volume:,.2f}",
             f"{cum_ask_vol:,.2f}",
-            f"{ask_vwap:,.2f}",
+            f"{format_vwap(ask_vwap)}",
             ticker_ask,
         )
 
@@ -193,6 +206,7 @@ def display_global_orderbook(bid_data, ask_data):
 async def generate_aggregate_orderbook(
     auth: AuthConfig, tickers: list, market_depth: int = 20
 ):
+    """Generate an aggregated order book from multiple tickers."""
     # Initialize global aggregates
     global_bid_data = []
     global_ask_data = []

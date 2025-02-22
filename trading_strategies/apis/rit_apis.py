@@ -25,7 +25,7 @@ async def get_case_status(auth: AuthConfig = Depends(get_auth_config)):
 
 @app.get("/trader")
 async def get_trader_info(auth: AuthConfig = Depends(get_auth_config)):
-    """Fetches the case status by querying the trader API."""
+    """Fetches the trader info by querying the trader API."""
     endpoint = "/v1/trader"
     return await query_api("get", endpoint, auth)
 
@@ -43,7 +43,7 @@ async def get_recent_news(
     after: Optional[int] = None,
     auth: AuthConfig = Depends(get_auth_config),
 ):
-    """Fetches the trading limits by querying the news API."""
+    """Fetches recent news by querying the news API."""
     params = (
         {
             "limit": limit,
@@ -61,7 +61,7 @@ async def get_recent_news(
 async def get_assets(
     ticker: Optional[str] = None, auth: AuthConfig = Depends(get_auth_config)
 ):
-    """Fetches the trading limits by querying the assets API."""
+    """Fetches the assets by querying the assets API."""
     params = {"ticker": ticker}
     endpoint = "/v1/assets"
     return await query_api("get", endpoint, auth, params=params)
@@ -74,7 +74,7 @@ async def get_assets_history(
     period: Optional[int] = None,
     auth: AuthConfig = Depends(get_auth_config),
 ):
-    """Fetches the trading limits by querying the assets/history API."""
+    """Fetches the assets history by querying the assets/history API."""
     params = {"ticker": ticker, "limit": limit, "period": period}
     endpoint = "/v1/assets/history"
     return await query_api("get", endpoint, auth, params=params)

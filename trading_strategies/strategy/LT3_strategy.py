@@ -24,6 +24,7 @@ async def limit_square_off_ticker_randomized_price(
     quantity: int,
     batch_size: int = 10000,
 ):
+    """Squares off a ticker position with randomized price using limit orders."""
     while True:
         random_choice = random.choice([0, 0.05, 0.1, 0.15, 0.2])
         # TODO: if error happens then this computation cannot be recovered back, add new logic @mayuresh
@@ -80,6 +81,7 @@ async def run_l3_strategy(
     strategy_func: Callable[[AuthConfig, str, str, int, int, int], Awaitable[None]],
     lt3_config,
 ):
+    """Runs the LT3 strategy by continuously monitoring and acting on tenders."""
     auth = AuthConfig(**lt3_config["auth"])
     end_of_time_hit = False
     while True:

@@ -11,10 +11,9 @@ from trading_strategies.models.custom_models import AuthConfig
 
 
 def get_auth_config() -> AuthConfig:
+    """Reads authentication config from environment and validates credentials."""
     # Load environment variables
     load_dotenv()
-
-    """Reads authentication config from environment and validates credentials."""
     server = os.getenv("SERVER", "http://localhost")
     port = int(os.getenv("PORT"))
     username = os.getenv("USERNAME")
@@ -43,7 +42,6 @@ async def query_api(
     params: Optional[Dict[str, Any]] = None,
 ) -> Any:
     """Generic function to query the trading API with different HTTP methods."""
-
     url = f"http://{auth.server}:{auth.port}{endpoint}"
     auth_str = f"{auth.username}:{auth.password}"
     encoded_auth = base64.b64encode(auth_str.encode()).decode()
@@ -82,6 +80,7 @@ async def query_api(
 async def market_square_off_ticker(
     position: int, ticker: str, auth: AuthConfig, batch_size: Optional[int] = 10000
 ):
+    """Squares off a given position for a specific ticker in batches."""
     action = "SELL" if position > 0 else "BUY"
     position = abs(position)
     endpoint = "/v1/orders"
@@ -106,6 +105,7 @@ async def market_square_off_ticker(
 
 
 async def cancel_open_orders(open_orders: list, auth: AuthConfig):
+    """Cancels all open orders provided in the list."""
     while open_orders:
         for i, order in enumerate(open_orders):
             try:
@@ -162,7 +162,7 @@ async def cancel_all_open_order(auth: AuthConfig):
 
 
 async def market_square_off_all_tickers(auth: AuthConfig, batch_size: int = 10000):
-    "Fetches the list of securities and then squares them off at the MARKET"
+    """Fetches the list of securities and then squares them off at the MARKET."""
     endpoint = "/v1/securities"
     # TODO @Mayuresh If error happens do to rate limiting then try again
     securities_data = await query_api("get", endpoint, auth)
@@ -185,7 +185,7 @@ async def fetch_securities(
 
 
 async def accept_tender(id: int, price: float, auth: AuthConfig):
-    """Accept the tender."""
+    """Accepts a tender with the given id and price."""
     endpoint = f"/v1/tenders/{id}"
     params = {"price": price}
     return await query_api("post", endpoint, auth, params=params)
@@ -234,7 +234,7 @@ async def post_order(
     price: Optional[float] = None,  # Optional, required if type is LIMIT
     dry_run: Optional[float] = None,  # Optional, only for MARKET type
 ):
-    """Insert a new order."""
+    """Inserts a new order with the given parameters."""
     endpoint = "/v1/orders"
     params = {
         "ticker": ticker,

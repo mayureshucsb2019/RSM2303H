@@ -6,6 +6,7 @@ from trading_strategies.strategy.strategy_utility import (
 
 
 def parse_lt3_env_variables():
+    """Parses and returns LT3 strategy-specific environment variables."""
     return {
         "auth": {
             "username": get_env_variable("USERNAME", str, True),
@@ -36,6 +37,7 @@ async def generate_lt3_signal(
     margin: float,
     market_depth: int = 20,
 ):
+    """Generates a trading signal for the LT3 strategy based on market depth data."""
     bid_data, ask_data = await generate_single_market_depth_for_ticker(
         auth, ticker, market_depth
     )
