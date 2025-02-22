@@ -210,11 +210,11 @@ async def is_tender_processed(
         try:
             securities_data = await fetch_securities(auth, ticker)
             print(
-                f"Checking if tender processed, quantity:{quantity} difference:{abs(abs(initial_position) - abs(securities_data[0]['position']))} initial_position:{initial_position} current_position:{securities_data[0]['position']} "
+                f"Checking if tender processed, quantity:{quantity} difference:{abs(initial_position - securities_data[0]['position'])} initial_position:{initial_position} current_position:{securities_data[0]['position']} "
             )
         except Exception as e:
             print(f"An error occurred while querying security {ticker}: {e}")
-        if abs(abs(initial_position) - abs(securities_data[0]["position"])) >= int(
+        if abs(initial_position - securities_data[0]["position"]) >= int(
             0.5 * abs(quantity)
         ):
             print(f"Tender has been processed")

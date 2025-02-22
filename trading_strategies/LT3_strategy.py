@@ -45,10 +45,6 @@ async def limit_square_off_ticker_randomized_price(
         else:
             break
         try:
-
-            print(
-                f"Trade for {auth} {ticker} {ticker_type} {action} {temp_quantity} {temp_price} placeing"
-            )
             await post_order(
                 auth=auth,
                 ticker=ticker,
