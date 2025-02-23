@@ -11,8 +11,8 @@ from trading_strategies.apis.api_utility import (
     post_order,
     query_api,
 )
-from trading_strategies.models.custom_models import AuthConfig
 from trading_strategies.logger_config import setup_logger
+from trading_strategies.models.custom_models import AuthConfig
 
 # Configure logging
 logger = setup_logger(__name__)

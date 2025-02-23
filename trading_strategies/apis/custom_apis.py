@@ -92,5 +92,7 @@ async def market_square_off_ticker(
     # TODO @Mayuresh If error happens do to rate limiting then try again
     securities_data = await query_api("get", endpoint, auth, params=securities_params)
     await msot(int(securities_data[0]["position"]), ticker, auth=auth)
-    logger.info(f"Trade for {ticker} squared off with for initial position: {securities_data[0]['position']}")
+    logger.info(
+        f"Trade for {ticker} squared off with for initial position: {securities_data[0]['position']}"
+    )
     return True
