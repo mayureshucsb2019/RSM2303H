@@ -12,7 +12,7 @@ def parse_lt3_env_variables():
             "username": get_env_variable("USERNAME", str, True),
             "password": get_env_variable("PASSWORD", str, True),
             "server": get_env_variable("SERVER", str, True),
-            "port": get_env_variable("PORT", str, True),
+            "port": get_env_variable("T3_PORT", str, True),
         },
         "T3_MARKET_DEPTH_POINTS": get_env_variable("T3_MARKET_DEPTH_POINTS", int, True),
         "T3_MIN_PROFIT_MARGIN": get_env_variable("T3_MIN_PROFIT_MARGIN", float, True),

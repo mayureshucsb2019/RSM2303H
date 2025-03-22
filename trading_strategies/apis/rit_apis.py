@@ -56,7 +56,7 @@ async def get_recent_news(
         if limit or after
         else {}
     )
-    logger.info(f"params are: {params}")
+
     endpoint = "/v1/news"
     return await query_api("get", endpoint, auth, params=params)
 

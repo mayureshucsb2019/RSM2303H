@@ -145,6 +145,15 @@ async def fetch_current_tick(auth: AuthConfig):
         raise HTTPException(status_code=500, detail=f"Failed to fetch tick: {str(e)}")
 
 
+async def fetch_current_period(auth: AuthConfig):
+    """Fetches the current tick by querying the case API."""
+    try:
+        case_data = await query_api("get", "/v1/case", auth)
+        return case_data.get("period")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch tick: {str(e)}")
+
+
 async def fetch_active_tenders(auth: AuthConfig):
     """Gets a list of all active tenders."""
     try:

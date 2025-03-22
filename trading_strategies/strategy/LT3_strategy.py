@@ -2,6 +2,7 @@ import asyncio
 import random
 from typing import Awaitable, Callable
 
+import trading_strategies.apis.rit_apis as rit
 from trading_strategies.apis.api_utility import (
     accept_tender,
     cancel_all_open_order,
@@ -87,6 +88,7 @@ async def run_l3_strategy(
 ):
     """Runs the LT3 strategy by continuously monitoring and acting on tenders."""
     auth = AuthConfig(**lt3_config["auth"])
+    logger.info(await rit.get_case_status(auth))
     end_of_time_hit = False
     while True:
         tender_response = []
