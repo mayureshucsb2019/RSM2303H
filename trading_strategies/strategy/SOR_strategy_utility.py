@@ -19,4 +19,7 @@ def parse_SOR_env_variables():
         "SOR_MIN_VWAP_MARGIN": float(
             get_env_variable("SOR_MIN_VWAP_MARGIN", float, True)
         ),
+        "SOR_SLIPPAGE_MARGIN": float(
+            get_env_variable("SOR_SLIPPAGE_MARGIN", float, True)
+        )
     }
