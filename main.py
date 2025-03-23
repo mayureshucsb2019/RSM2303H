@@ -101,7 +101,7 @@ async def main():
     #     )
     #     display_market_depth_table("CRZY", bid, ask)
     #     await asyncio.sleep(0.05)
-    
+
     # Uncomment this to be used for VaR run
     # await Var()
 

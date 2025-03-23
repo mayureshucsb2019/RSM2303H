@@ -1,10 +1,12 @@
-from trading_strategies.strategy.strategy_utility import get_env_variable
 import numpy as np
 from cvxopt import matrix, solvers
 from scipy.stats import norm
+
 from trading_strategies.logger_config import setup_logger
+from trading_strategies.strategy.strategy_utility import get_env_variable
 
 logger = setup_logger(__name__)
+
 
 def parse_var_env_variables():
     """Parses and returns Var strategy-specific environment variables."""
@@ -17,31 +19,39 @@ def parse_var_env_variables():
         }
     }
 
+
 def variance_covariance_matrix(volatilities, correlation_matrix):
     """
     Computes the variance-covariance matrix from a given volatility vector and correlation matrix.
-    
+
     Parameters:
     volatilities (np.array): A 1D array containing asset volatilities (standard deviations).
     correlation_matrix (np.array): A 2D array representing the correlation matrix.
-    
+
     Returns:
     np.array: The variance-covariance matrix.
     """
     vol_matrix = np.diag(volatilities)
     return vol_matrix @ correlation_matrix @ vol_matrix
 
-def calculate_var(volatilities, correlation_matrix, portfolio_weights, portfolio_value, confidence_level=0.95):
+
+def calculate_var(
+    volatilities,
+    correlation_matrix,
+    portfolio_weights,
+    portfolio_value,
+    confidence_level=0.95,
+):
     """
     Calculates the Value at Risk (VaR) using the Variance-Covariance method.
-    
+
     Parameters:
     volatilities (np.array): 1D array of asset volatilities (standard deviations).
     correlation_matrix (np.array): 2D correlation matrix.
     portfolio_weights (np.array): 1D array of asset weights in the portfolio.
     portfolio_value (float): Total value of the portfolio.
     confidence_level (float): Confidence level for VaR (default: 95%).
-    
+
     Returns:
     float: Value at Risk (VaR) in monetary terms.
     """
@@ -59,7 +69,10 @@ def calculate_var(volatilities, correlation_matrix, portfolio_weights, portfolio
     var_value = z_score * portfolio_std_dev * portfolio_value
     return var_value
 
-def calculate_units(price_per_unit:  float, volatility: float, VaR_limit: int = 20000, z_score=2.33):
+
+def calculate_units(
+    price_per_unit: float, volatility: float, VaR_limit: int = 20000, z_score=2.33
+):
     """
     Calculate the number of units of a given asset (US) to keep Value at Risk (VaR) under a specified limit.
 
@@ -75,16 +88,25 @@ def calculate_units(price_per_unit:  float, volatility: float, VaR_limit: int = 
 
     return int(VaR_limit / (volatility * z_score * price_per_unit))
 
-def optimize_portfolio(current_prices, expected_prices, volatilities, correlation_matrix, total_capital=1000000):
+
+def optimize_portfolio(
+    current_prices,
+    expected_prices,
+    volatilities,
+    correlation_matrix,
+    total_capital=1000000,
+):
     # Calculate expected returns (percentage change)
-    expected_returns = np.array([
-        (expected_prices['US'] - current_prices['US']) / current_prices['US'],
-        (expected_prices['BRIC'] - current_prices['BRIC']) / current_prices['BRIC'],
-        (expected_prices['BOND'] - current_prices['BOND']) / current_prices['BOND']
-    ])
+    expected_returns = np.array(
+        [
+            (expected_prices["US"] - current_prices["US"]) / current_prices["US"],
+            (expected_prices["BRIC"] - current_prices["BRIC"]) / current_prices["BRIC"],
+            (expected_prices["BOND"] - current_prices["BOND"]) / current_prices["BOND"],
+        ]
+    )
     print("###########################################")
     print("Expected returns:", expected_returns)
-    
+
     # Covariance matrix based on volatilities and correlation
     cov_matrix = np.outer(volatilities, volatilities) * correlation_matrix
     print("###########################################")
@@ -112,12 +134,12 @@ def optimize_portfolio(current_prices, expected_prices, volatilities, correlatio
     print(h)
 
     # Solve the optimization problem with a KKT solver explicitly
-    sol = solvers.qp(P, q, G, h, solver='cvxopt')
+    sol = solvers.qp(P, q, G, h, solver="cvxopt")
     print("sol ###########################################")
     print(sol)
 
     # Extract the optimal weights
-    weights = np.array(sol['x'])
+    weights = np.array(sol["x"])
     print("weights ###########################################")
     print(weights)
 
@@ -127,7 +149,7 @@ def optimize_portfolio(current_prices, expected_prices, volatilities, correlatio
     print(asset_values)
 
     # Prepare the result in dictionary format for easy readability
-    asset_names = ['US', 'BRIC', 'BOND']
+    asset_names = ["US", "BRIC", "BOND"]
     result = {asset_names[i]: asset_values[i][0] for i in range(n_assets)}
     print("###########################################")
     print(result)
