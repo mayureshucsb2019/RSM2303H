@@ -34,6 +34,10 @@ async def generate_sor_signal(
     # Compute Global VWAP
     total_volume = sum(security["volume"] for security in securities_data)
     global_vwap = sum(security["volume"] * security["last"] for security in securities_data) / total_volume
+    current_position = next((s["position"] for s in securities_data), 0)
+    if current_position + quantity >= 100000 or current_position + quantity <= -100000:
+        logger.info(f"Waiting for previous squareoff to happen")
+        return {"success": False}
 
     # Evaluate execution condition
     price_threshold = price + vwap_margin if action == "BUY" else price - vwap_margin
@@ -45,7 +49,7 @@ async def generate_sor_signal(
     return {"success": False}
 
 
-async def smart_order_routing(auth: AuthConfig, block_quantity: int = 1500):
+async def smart_order_routing(auth: AuthConfig, block_quantity: int = 1000):
     global last_tender_price, current_tick, max_tick, slippage_margin
     logger.info("STARTING SMART ORDER ROUTING")
     
@@ -120,8 +124,7 @@ async def SOR():
                 if tender_response:
                     logger.info(f"Details of tender received: \n{tender_response}")
                     for tender in tender_response:
-                        logger.info(tender)
-                        last_tender_price = tender["price"]
+                        logger.info(tender)                        
                         tender_response = await generate_sor_signal(
                             auth=auth,
                             ticker=tender["ticker"],
@@ -132,6 +135,7 @@ async def SOR():
                             tender_id=tender["tender_id"],
                         )
                     if tender_response["success"]:
+                        last_tender_price = tender["price"]
                         logger.info("Tender accepted now sleeping tender check for 30 seconds to square off")
                         await asyncio.sleep(30)
             else:
