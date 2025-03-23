@@ -1,6 +1,11 @@
 import asyncio
 
 from trading_strategies.strategy.VaR_strategy import Var
+# from trading_strategies.strategy.LT3_strategy import run_l3_strategy, limit_square_off_ticker_randomized_price
+# from trading_strategies.strategy.LT3_strategy_utility import parse_lt3_env_variables
+import trading_strategies.apis.rit_apis as rit
+from trading_strategies.strategy.SOR_strategy import SOR
+from trading_strategies.models.custom_models import AuthConfig
 
 
 async def main():
@@ -58,7 +63,7 @@ async def main():
     # print(await custom_api.market_square_off_ticker("CRZY", auth=get_auth_config()))
     # print(await custom_api.market_square_off_all_tickers(auth=get_auth_config()))
 
-    # Uncomment this below line to run LT3 Strategy
+    # # Uncomment this below line to run LT3 Strategy
     # await run_l3_strategy(
     #     limit_square_off_ticker_randomized_price, parse_lt3_env_variables()
     # )
@@ -96,8 +101,12 @@ async def main():
     #     )
     #     display_market_depth_table("CRZY", bid, ask)
     #     await asyncio.sleep(0.05)
+    
+    # Uncomment this to be used for VaR run
+    # await Var()
 
-    await Var()
+    # Uncomment this to be used for SOR run
+    await SOR()
 
 
 if __name__ == "__main__":

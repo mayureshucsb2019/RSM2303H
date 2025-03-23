@@ -75,7 +75,6 @@ def calculate_units(price_per_unit:  float, volatility: float, VaR_limit: int = 
 
     return int(VaR_limit / (volatility * z_score * price_per_unit))
 
-
 def optimize_portfolio(current_prices, expected_prices, volatilities, correlation_matrix, total_capital=1000000):
     # Calculate expected returns (percentage change)
     expected_returns = np.array([
