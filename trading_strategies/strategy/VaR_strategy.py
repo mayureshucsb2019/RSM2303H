@@ -151,6 +151,7 @@ async def Var(risk_value: float = 20000):
     """Runs the Var strategy by continuously monitoring and acting on new News."""
     auth = AuthConfig(**parse_var_env_variables()["auth"])
     case_status = await rit.get_case_status(auth)
+    logger.info(case_status)
     case_status = case_status["status"]
     current_value = {}
     # Given volatilities (converted to decimals) US BRIC BOND

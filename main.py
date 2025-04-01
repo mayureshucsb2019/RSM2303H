@@ -1,15 +1,22 @@
 import asyncio
 
 from trading_strategies.strategy.VaR_strategy import Var
-# from trading_strategies.strategy.LT3_strategy import run_l3_strategy, limit_square_off_ticker_randomized_price
-# from trading_strategies.strategy.LT3_strategy_utility import parse_lt3_env_variables
+from trading_strategies.strategy.LT3_strategy import run_l3_strategy, limit_square_off_ticker_randomized_price
+from trading_strategies.strategy.LT3_strategy_utility import parse_lt3_env_variables
 import trading_strategies.apis.rit_apis as rit
 from trading_strategies.strategy.SOR_strategy import SOR
 from trading_strategies.models.custom_models import AuthConfig
 
+from trading_strategies.strategy.SOR_strategy_utility import parse_SOR_env_variables
 
 async def main():
     # APIs to fetch case info, trader info, news, and limits
+    # sor_config = parse_SOR_env_variables()
+    # auth = AuthConfig(**sor_config["auth"])
+    # auth.server = "16631"
+    # print(await rit.get_case_status(auth=auth))
+    # await rit.post_order(auth=auth,ticker="THOR_A",ticker_type="MARKET",quantity=10000,action="BUY")
+
     # print(await rit.get_case_status(auth=get_auth_config()))
     # print(await rit.get_trader_info(auth=get_auth_config()))
     # print(await rit.get_recent_news(after=0, auth=get_auth_config()))
@@ -63,11 +70,6 @@ async def main():
     # print(await custom_api.market_square_off_ticker("CRZY", auth=get_auth_config()))
     # print(await custom_api.market_square_off_all_tickers(auth=get_auth_config()))
 
-    # # Uncomment this below line to run LT3 Strategy
-    # await run_l3_strategy(
-    #     limit_square_off_ticker_randomized_price, parse_lt3_env_variables()
-    # )
-
     # ticker = "CRZY"
     # bid, ask = await generate_single_market_depth_for_ticker(auth=get_auth_config(), ticker=ticker)
     # display_market_depth_table(ticker=ticker, bid_data=bid, ask_data=ask)
@@ -102,11 +104,16 @@ async def main():
     #     display_market_depth_table("CRZY", bid, ask)
     #     await asyncio.sleep(0.05)
 
+    # Uncomment this below line to run LT3 Strategy
+    await run_l3_strategy(
+        limit_square_off_ticker_randomized_price, parse_lt3_env_variables()
+    )
+
     # Uncomment this to be used for VaR run
     # await Var()
 
     # Uncomment this to be used for SOR run
-    await SOR()
+    # await SOR()
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ last_tender_price = 0
 current_tick = 0
 max_tick = 0
 slippage_margin = 0
+securities_data = []
 
 
 async def generate_sor_signal(
@@ -29,28 +30,31 @@ async def generate_sor_signal(
     vwap_margin: float,
     tender_id: int,
 ):
-    securities_data = await fetch_securities(auth)
+    global securities_data
+    # securities_data = await fetch_securities(auth)
     
     # Compute Global VWAP
     total_volume = sum(security["volume"] for security in securities_data)
     global_vwap = sum(security["volume"] * security["last"] for security in securities_data) / total_volume
     current_position = next((s["position"] for s in securities_data), 0)
-    if current_position + quantity >= 100000 or current_position + quantity <= -100000:
+    multiplier = -1 if action == "SELL" else 1
+    if current_position + quantity*multiplier >= 100000 or current_position + quantity*multiplier <= -100000:
         logger.info(f"Waiting for previous squareoff to happen")
         return {"success": False}
 
     # Evaluate execution condition
     price_threshold = price + vwap_margin if action == "BUY" else price - vwap_margin
+    logger.info(f"tender_price {price} action {action} margin {vwap_margin} threshold {price_threshold} global vwap {global_vwap}")
     if (action == "BUY" and price_threshold < global_vwap) or (action == "SELL" and price_threshold > global_vwap):
         logger.info(f"Tender accepted: {ticker} {price} {action} {quantity}, global_vwap: {global_vwap}")
         return await accept_tender(auth=auth, id=tender_id, price=price)
-
+    
     logger.info(f"Waiting for better conditions: {ticker} {price} {action} {quantity}, global_vwap: {global_vwap}")
     return {"success": False}
 
 
 async def smart_order_routing(auth: AuthConfig, block_quantity: int = 1000):
-    global last_tender_price, current_tick, max_tick, slippage_margin
+    global last_tender_price, current_tick, max_tick, slippage_margin, securities_data
     logger.info("STARTING SMART ORDER ROUTING")
     
     while True:
@@ -85,10 +89,10 @@ async def smart_order_routing(auth: AuthConfig, block_quantity: int = 1000):
                 await post_order(auth, ticker, "MARKET", quantity, squareoff_action)
             else:
                 logger.info("Price is not profitable.......")
-            await asyncio.sleep(0.03)        
+            await asyncio.sleep(0.05)        
         except Exception as e:
-            logger.error(f"Unable to get current tick {e}, redo loop")
-            await asyncio.sleep(0.03)
+            logger.error(f"Error {e}, redo smart order routing")
+            await asyncio.sleep(0.05)
             continue
 
 def run_async_in_thread(auth):
@@ -105,11 +109,10 @@ async def SOR():
     slippage_margin = sor_config["SOR_SLIPPAGE_MARGIN"]
     auth = AuthConfig(**sor_config["auth"])
 
-    # Create and start a new thread
-    threading.Thread(target=run_async_in_thread, args=(auth,), daemon=True).start()
-
     logger.info(sor_config)
     logger.info(await rit.get_case_status(auth=auth))
+    # Create and start a new thread
+    threading.Thread(target=run_async_in_thread, args=(auth,), daemon=True).start()
 
     while True:
         try:
